@@ -1,0 +1,15 @@
+{
+    "name": "CEO Assistant Pro",
+    "short_name": "CEO Pro",
+    "start_url": "index.html",
+    "display": "standalone",
+    "background_color": "#fdf1f7",
+    "theme_color": "#ff8fab",
+    "icons": [
+      {
+        "src": "icon.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
