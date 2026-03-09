@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO Assistant Pro + Audio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --primary: #ff8fab;
+            --primary-dark: #fb6f92;
+            --bg: #fdf1f7;
+            --card-bg: #ffffff;
+            --text: #4a4a4a;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: white;
+            border-top: 1px solid #eee;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            padding-bottom: 80px;
+            transition: all 0.3s;
+        }
+
+        @media (min-width: 992px) {
+            nav {
+                width: var(--sidebar-width);
+                height: 100vh;
+                left: 0;
+                top: 0;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding-top: 80px;
+                border-top: none;
+                border-right: 1px solid #eee;
+            }
+
+            .main-content {
+                margin-left: var(--sidebar-width);
+                padding: 40px;
+                max-width: 1200px;
+            }
+
+            nav button {
+                width: 100% !important;
+                text-align: left;
+                padding: 15px 25px !important;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                border: none;
+                background: none;
+            }
+
+            nav button::after {
+                content: attr(data-label);
+                font-size: 16px;
+                font-weight: 500;
+            }
+
+            .grid-system {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* UI Components */
+        header {
+            text-align: center;
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-radius: 0 0 20px 20px;
+            position: relative;
+        }
+
+        .notification-toggle {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(255, 143, 171, 0.1);
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border-radius: 12px;
+            border: 1.5px solid #eee;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        button {
+            background: var(--primary);
+            border: none;
+            padding: 14px;
+            border-radius: 15px;
+            color: white;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        nav button {
+            color: #ccc;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        nav button.active-nav {
+            color: var(--primary);
+            background: #fff5f7;
+        }
+
+        .alert-banner {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"
+        preload="auto"></audio>
+
+    <div class="app-container">
+
+        <nav id="bottomNav" style="display:none;">
+            <button onclick="showPage('dashboard')" id="nav-dashboard" data-label="Dashboard">🏠</button>
+            <button onclick="showPage('schedule')" id="nav-schedule" data-label="Schedule">📅</button>
+            <button onclick="showPage('client')" id="nav-client" data-label="Clients">👥</button>
+            <button onclick="showPage('notesPage')" id="nav-notesPage" data-label="AI Notes">📝</button>
+        </nav>
+
+        <div class="main-content">
+            <header>
+                🌸 CEO Assistant Pro
+                <span class="notification-toggle" onclick="requestNotificationPermission()">🔔</span>
+            </header>
+
+            <div id="notifBanner" class="alert-banner">
+                Please <b>Enable Notifications</b> and <b>Interact</b> with the page to allow audio alerts.
+                <br><button onclick="requestNotificationPermission()"
+                    style="width:auto; margin-top:10px; padding:5px 15px;">Enable Alerts</button>
+            </div>
+
+            <div id="loginPage" class="page active">
+                <div class="card" style="max-width: 400px; margin: 50px auto; text-align: center;">
+                    <h2>CEO Secure Access</h2>
+                    <input id="userIn" placeholder="Username (admin)">
+                    <input id="passIn" type="password" placeholder="Password (1234)">
+                    <button onclick="handleLogin()">Login</button>
+                </div>
+            </div>
+
+            <div id="dashboard" class="page">
+                <h3>✨ Strategic Overview</h3>
+                <div class="grid-system">
+                    <div class="card">
+                        <h4>Current Status</h4>
+                        <p>Scheduled Today: <b id="dashMeetings">0</b></p>
+                        <p>Client Inquiries: <b id="dashRequests">0</b></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="schedule" class="page">
+                <h3>📅 Meeting Calendar</h3>
+                <div class="grid-system">
+                    <div class="card">
+                        <input id="title" placeholder="Meeting Title">
+                        <input type="datetime-local" id="time">
+                        <input id="meetlink" placeholder="Google Meet Link">
+                        <button onclick="addMeeting()">Save Schedule</button>
+                    </div>
+                    <div id="meetingList"></div>
+                </div>
+            </div>
+
+            <div id="client" class="page">
+                <h3>👥 Client Requests</h3>
+                <div class="grid-system">
+                    <div class="card">
+                        <input id="clientName" placeholder="Client Name">
+                        <input id="clientTime" type="datetime-local">
+                        <button onclick="checkAvailability()">Verify Availability</button>
+                        <div id="availResult" style="margin: 15px 0; text-align: center; font-weight:bold;"></div>
+                        <button style="background:#6fbaff" onclick="addRequest()">Log Request</button>
+                    </div>
+                    <div id="requestList"></div>
+                </div>
+            </div>
+
+            <div id="notesPage" class="page">
+                <h3>📝 Intelligence Hub</h3>
+                <div class="grid-system">
+                    <div class="card">
+                        <button style="background:#ff4757; margin-bottom:10px;" onclick="startRecording()">🎤 Start
+                            Dictation</button>
+                        <textarea id="notes" rows="10" placeholder="Capture meeting notes here..."></textarea>
+                        <button onclick="generateReport()">Generate Final Report</button>
+                    </div>
+                    <div class="card" id="reportDisplay"
+                        style="white-space: pre-wrap; font-size:14px; background:#fff; border:1px solid #eee; padding:15px; border-radius:15px;">
+                        Reports will appear here...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let meetings = [];
+        let requests = [];
+        let notifiedMeetings = new Set();
+        const audio = document.getElementById('notifSound');
+
+        // AUDIO & NOTIFICATION LOGIC
+        function playSound() {
+            audio.play().catch(e => console.log("Audio play blocked until user interaction"));
+        }
+
+        function requestNotificationPermission() {
+            // Unlock audio context on click
+            playSound();
+
+            if (!("Notification" in window)) {
+                alert("Browser does not support notifications.");
+            } else {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        document.getElementById('notifBanner').style.display = 'none';
+                        new Notification("System Ready", { body: "Audio and visual alerts are active." });
+                    }
+                });
+            }
+        }
+
+        // Background Check Loop
+        setInterval(() => {
+            const now = new Date();
+            meetings.forEach(m => {
+                const mTime = new Date(m.time);
+                const diff = (mTime - now) / 1000 / 60;
+
+                if (diff > 0 && diff <= 2 && !notifiedMeetings.has(m.time + m.title)) {
+                    triggerAlert(m);
+                    notifiedMeetings.add(m.time + m.title);
+                }
+            });
+        }, 20000); // Check every 20 seconds
+
+        function triggerAlert(meeting) {
+            playSound(); // Play the Chime
+
+            if (Notification.permission === "granted") {
+                const n = new Notification("Meeting Starting Soon!", {
+                    body: `${meeting.title} begins in 2 mins.`,
+                    icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                });
+                n.onclick = () => { window.focus(); window.open(meeting.link, '_blank'); };
+            } else {
+                alert(`⏰ REMINDER: ${meeting.title} starts soon!`);
+            }
+        }
+
+        // App Navigation
+        function showPage(id) {
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            document.querySelectorAll("nav button").forEach(b => b.classList.remove("active-nav"));
+            document.getElementById(id).classList.add("active");
+            if (document.getElementById('nav-' + id)) document.getElementById('nav-' + id).classList.add("active-nav");
+        }
+
+        function handleLogin() {
+            if (document.getElementById("userIn").value === "admin") {
+                playSound(); // Wakes up audio engine
+                document.getElementById("bottomNav").style.display = "flex";
+                if (Notification.permission !== "granted") document.getElementById('notifBanner').style.display = 'block';
+                showPage('dashboard');
+            }
+        }
+
+        // Functional Logic
+        function addMeeting() {
+            const title = document.getElementById("title").value;
+            const time = document.getElementById("time").value;
+            const link = document.getElementById("meetlink").value;
+            if (title && time) {
+                meetings.push({ title, time, link });
+                renderMeetings();
+                updateDashboard();
+            }
+        }
+
+        function renderMeetings() {
+            const list = document.getElementById("meetingList");
+            list.innerHTML = "";
+            meetings.sort((a, b) => new Date(a.time) - new Date(b.time)).forEach(m => {
+                list.innerHTML += `<div class="card"><b>💼 ${m.title}</b><br><small>${new Date(m.time).toLocaleString()}</small></div>`;
+            });
+        }
+
+        function updateDashboard() {
+            document.getElementById("dashMeetings").innerText = meetings.length;
+            document.getElementById("dashRequests").innerText = requests.length;
+        }
+
+        function checkAvailability() {
+            let t = document.getElementById("clientTime").value;
+            let conflict = meetings.find(m => m.time === t);
+            document.getElementById("availResult").innerText = conflict ? "❌ Status: CEO Busy" : "✅ Status: CEO Available";
+        }
+
+        function addRequest() {
+            requests.push({ name: document.getElementById("clientName").value, time: document.getElementById("clientTime").value });
+            updateDashboard();
+            alert("Client request queued.");
+        }
+
+        function generateReport() {
+            document.getElementById("reportDisplay").innerText = "OFFICIAL CEO REPORT\n----------------\n" + document.getElementById("notes").value;
+        }
+    </script>
+</body>
+
+</html>
